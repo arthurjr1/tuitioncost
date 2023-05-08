@@ -1,0 +1,159 @@
+---
+title: "Average Cost of Undergraduate Tuition & Fees in the U.S."
+subtitle: "SIS Data Analysis 750"
+author: "By Arthur Tartee"
+date: "May 4, 2023"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      transition: "slide"
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+library(tidyverse)
+library(devtools)
+library("ggThemeAssist")
+library(patchwork) # to make plot comparison
+library(lubridate) # for working with dates
+library(scales)
+library(magrittr)
+library(showtext)
+library(extrafont)
+
+getwd() # load the data that
+list.files("/Users/Arthur/Documents/Data Analysis")
+
+df <- read_csv ("nces330_20.csv")
+
+# prepare the data for usage 
+
+ddf <- df %>%
+  filter(Year == 2021)
+
+ddf1 <- ddf[ddf$Length=="4-year" & ddf$Expense == "Fees/Tuition", 
+            c("Year", "State", "Type", "Length", "Expense", "Value")]
+
+pr <- ddf1[ddf1$Type =="Private", c("Year", "State", "Type", "Length", "Expense", "Value")]
+
+ps1 <- ddf1[ddf1$Type =="Public Out-of-State", c("Year", "State", "Type", "Length", "Expense", "Value")]
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#fdf7f0",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono"))
+style_duo_accent(
+  primary_color = "#23395b",
+  secondary_color = "steelblue",
+  inverse_header_color = "#FFFFFF")
+```
+
+## Understanding the Average Cost of Undergraduate Tuition in the U.S.
+
+.pull-left[
+
+- Years of average cost of college in the United States by state **2013-2021**
+- Type of Institution, Private or Public 
+
+  - In-state or out-of-state
+  
+  - Private college charge the same for in-state and out-of-state student
+  
+- The average cost for the tuition expense is in USD($)
+]
+
+.pull-right[
+
+![an image](American-Universities-Feature-Image-1024x576.jpg)
+]
+
+---
+
+class: center, top
+## Observing the Average Cost of Colleges in United States
+
+```{r plot1, echo=FALSE, fig.height=6, fig.width=12, dev='png'}
+ggplot(data = df, aes(x= Year, y= Value)) + 
+  geom_point(shape =1, color = 'steelblue', alpha = 0.5, fill = "white") + 
+  scale_x_continuous(breaks = c(2013, 2015, 2017, 2019, 2021))+
+  scale_y_continuous(labels = label_dollar()) + theme(plot.subtitle = element_text(family = "serif",
+    size = 12, face = "italic", colour = "gray2",
+    hjust = 0.5), plot.caption = element_text(family = "serif",
+    size = 8, face = "bold.italic", colour = "gray2"),
+    panel.grid.major = element_line(linetype = "blank"),
+    panel.grid.minor = element_line(linetype = "blank"),
+    axis.title = element_text(family = "serif",
+        face = "bold", colour = "gray2",
+        vjust = 1), plot.title = element_text(family = "serif",
+        size = 16, face = "bold", colour = "gray2",
+        hjust = 0.5, vjust = 1), legend.text = element_text(family = "serif"),
+    legend.title = element_text(face = "bold",
+        family = "serif"), panel.background = element_rect(fill = NA)) +labs(title = "Average Cost of U.S Colleges from 2013-2021",
+    size = 0.5, subtitle = "Average cost across the 50 States & Washington DC ",
+    caption = "Data Source: National Center for Education Statistics Annual Digest") + theme(plot.caption = element_text(size = 10),
+    axis.title = element_text(vjust = 1.75),
+    axis.text = element_text(vjust = 0.25),
+    axis.text.x = element_text(vjust = 0.25),
+    axis.text.y = element_text(vjust = 0.25)) + theme(plot.background = element_rect(fill = "white"))
+
+```
+
+---
+
+class: center, top
+## Differences in Public versus Private College
+
+```{r plot2, echo=FALSE, fig.height=6, fig.width=12, dev='png'}
+# plot subplot of type of colleges
+
+plot <- ggplot(data = df, aes(x= Year, y= Value)) + 
+  geom_point(shape =1, color = 'steelblue', alpha = 0.5, fill = "white") + 
+  scale_x_continuous(breaks = c(2013, 2015, 2017, 2019, 2021))+
+  scale_y_continuous(labels = label_dollar())  + theme(plot.subtitle = element_text(family = "serif",
+    size = 12, face = "italic", colour = "gray2",
+    hjust = 0.5), plot.caption = element_text(family = "serif",
+    size = 10, face = "bold.italic", colour = "gray2"),
+    panel.grid.major = element_line(linetype = "blank"),
+    panel.grid.minor = element_line(linetype = "blank"),
+    axis.title = element_text(family = "serif",
+        face = "bold", colour = "gray2",
+        vjust = 1), plot.title = element_text(family = "serif",
+        size = 16, face = "bold", colour = "gray2",
+        hjust = 0.5, vjust = 1), legend.text = element_text(family = "serif"),
+    legend.title = element_text(face = "bold",
+        family = "serif"), panel.background = element_rect(fill = NA)) +labs(title = "Value Cost of College (2013-2021)",
+    subtitle = "Value of Public versus Private College (2-4 Years)",
+    caption = "Data Source: National Center for Education Statistics Annual Digest")
+
+plot +
+  facet_grid(. ~ Type, scales = "free")
+  
+p1 = 
+  plot +
+  facet_grid(. ~ Type, scales = "free")
+
+p2 = plot +
+  facet_grid(Length ~ Type, scales = "free")
+
+
+
+```
+---
+
+class: center, top
+## Differences in 2-4 years Public versus Private College
+
+```{r plot3, echo=FALSE, fig.height=6, fig.width=12, dev='png'}
+p1 / p2
+
+```
